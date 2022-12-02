@@ -3,6 +3,7 @@ const NewUser = require("../models/users.js");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const multer = require("multer");
+const sharp = require("sharp");
 
 const upload = multer({
   limits: {
@@ -114,7 +115,11 @@ router.post(
   auth,
   upload.single("avatar"),
   async (req, res) => {
-    req.user.avatar = req.file.buffer;
+    const updated = await sharp(req.file.buffer)
+      .resize({ width: 200, height: 100 })
+      .png()
+      .toBuffer();
+    req.user.avatar = updated;
     await req.user.save();
     res.send();
   },
